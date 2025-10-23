@@ -4,6 +4,7 @@ import { getCurrentParagraphBeginning, getCurrentParagraphEnd } from '../src/tex
 import { WordType } from '../src/textobject/word';
 import { TextEditor } from './../src/textEditor';
 import { setupWorkspace } from './testUtils';
+// import { MoveToMatchingBracket } from '../src/actions/motion'
 
 suite('basic motion', () => {
   const text: string[] = ['mary had', 'a', 'little lamb', ' whose fleece was '];
@@ -656,6 +657,34 @@ suite('paragraph motion', () => {
       const motion = getCurrentParagraphBeginning(new Position(5, 0));
       assert.strictEqual(motion.line, 1);
       assert.strictEqual(motion.character, 0);
+    });
+  });
+});
+
+suite('parenthesis motion', () => {
+  const text: string[] = ['fn a() {', '   fn b() {', '', '    }', '}'];
+
+  suiteSetup(async () => {
+    await setupWorkspace();
+    await window.activeTextEditor!.edit((editBuilder) => {
+      editBuilder.insert(new Position(0, 0), text.join('\n'));
+    });
+  });
+
+  suite('forward unmatched curly brace', () => {
+    test('overly large count does not fail (forward unmatched curly brace)', () => {
+      const motion = new Position(0, 0).getSentenceBegin({ forward: true });
+      // const motion = new MoveToMatchingBracket().getSentenceBegin({ forward: true });
+      assert.strictEqual(motion.line, 0);
+      assert.strictEqual(motion.character, 35);
+    });
+  });
+
+  suite('backward unmatched curly brace', () => {
+    test('overly large count does not fail (backward unmatched curly brace)', () => {
+      const motion = new Position(0, 0).getSentenceBegin({ forward: true });
+      assert.strictEqual(motion.line, 0);
+      assert.strictEqual(motion.character, 35);
     });
   });
 });
